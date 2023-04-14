@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.itcschedule.Model.ScheduleX
 
-class ScheduleAdapter(private val scheduleList: List<ScheduleX>) :
+class ScheduleAdapter(private var scheduleList: List<ScheduleX>) :
     RecyclerView.Adapter<ScheduleAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -22,6 +22,11 @@ class ScheduleAdapter(private val scheduleList: List<ScheduleX>) :
     }
 
     override fun getItemCount() = scheduleList.size
+
+    fun updateSchedule(newScheduleList: List<ScheduleX>) {
+        scheduleList = newScheduleList
+        notifyDataSetChanged()
+    }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val dayTextView: TextView = itemView.findViewById(R.id.day)

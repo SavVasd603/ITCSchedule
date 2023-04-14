@@ -3,6 +3,7 @@ package com.example.itcschedule
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.itcschedule.API.ApiClient
@@ -10,10 +11,9 @@ import com.example.itcschedule.Model.ScheduleX
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ScheduleAdapter
-    private lateinit var scheduleList: List<ScheduleX>
+    private lateinit var viewModel: ScheduleViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,17 +25,17 @@ class MainActivity : AppCompatActivity() {
         adapter = ScheduleAdapter(emptyList())
         recyclerView.adapter = adapter
 
-        CoroutineScope(Dispatchers.Main).launch {
-            val response = withContext(Dispatchers.IO) { ApiClient.scheduleApi.getSchedule() }
+        viewModel = ViewModelProvider(this).get(ScheduleViewModel::class.java)
+        viewModel.scheduleList.observe(this, { scheduleList ->
+            adapter.updateSchedule(scheduleList)
+        })
+        viewModel.errorMessage.observe(this, { errorMessage ->
+            Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
+        })
+        viewModel.loading.observe(this, { loading ->
+            // show/hide loading indicator as needed
+        })
 
-            if (response.isSuccessful) {
-                val schedule = response.body()?.schedule
-                scheduleList = schedule ?: emptyList()
-                adapter = ScheduleAdapter(scheduleList)
-                recyclerView.adapter = adapter
-            } else {
-                Toast.makeText(this@MainActivity, "Error loading schedule", Toast.LENGTH_SHORT).show()
-            }
-        }
+        viewModel.getSchedule()
     }
 }
